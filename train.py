@@ -137,6 +137,7 @@ def do_eval(model, dataloader, config, device):
 
 if __name__=='__main__':
 
+    os.environ['CUDA_LAUNCH_BLOCKING'] = '1'
     torch.multiprocessing.set_start_method('spawn')
 
     parser = argparse.ArgumentParser()
@@ -153,7 +154,7 @@ if __name__=='__main__':
     if not os.path.exists(config['solver']['save_dir']):
         os.makedirs(config['solver']['save_dir'])
 
-    device = 'cuda:2' if torch.cuda.is_available() else 'cpu'
+    device = 'cuda:0'
 
     ##Make Dataloader
     data_loaders = None

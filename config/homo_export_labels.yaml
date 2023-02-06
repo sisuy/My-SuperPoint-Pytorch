@@ -27,7 +27,7 @@ model:
     det_thresh: 0.015 #0.015
     nms: 4
     topk: 0
-    pretrained_model: './export/mg_syn_19.pth'
+    pretrained_model: './export/mg_syn_2_0.19.pth'
     backbone:
         backbone_type: 'VGG'
         vgg:

@@ -25,8 +25,8 @@ def homographic_aug_pipline(img, pts, config, device='cpu'):
     image_shape = img.shape[2:]#HW
     homography = sample_homography(image_shape, config['params'], device=device)
     ##
-    #warped_image = cv2.warpPerspective(img, homography, tuple(image_shape[::-1]))
-    warped_image = kornia.warp_perspective(img, homography, image_shape, align_corners=True)
+    ##arped_image = cv2.warpPerspective(img, homography, tuple(image_shape[::-1]))
+    warped_image = kornia.warp_perspective(img, homography,image_shape, align_corners=True)
 
     warped_valid_mask = compute_valid_mask(image_shape, homography, config['valid_border_margin'], device=device)
 
@@ -63,7 +63,7 @@ def compute_valid_mask(image_shape, homographies, erosion_radius=0, device='cpu'
     # homographies = torch.linalg.inv(homographies)
     B = homographies.shape[0]
     img_one = torch.ones(tuple([B,1,*image_shape]),device=device, dtype=torch.float32)#B,C,H,W
-    mask = kornia.warp_perspective(img_one, homographies, tuple(image_shape), align_corners=True)
+    mask = kornia.warp_perspective(img_one, homographies, tuple(image_shape))
     mask = mask.round()#B1HW
     #mask = cv2.warpPerspective(np.ones(image_shape), homography, dsize=tuple(image_shape[::-1]))#dsize=tuple([w,h])
     if erosion_radius > 0:

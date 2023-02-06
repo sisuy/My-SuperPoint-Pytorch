@@ -139,6 +139,7 @@ def homography_adaptation(net, raw_image, config, device='cpu'):
 
 
 if __name__=='__main__':
+    os.environ['CUDA_LAUNCH_BLOCKING'] = '1'
     import matplotlib.pyplot as plt
 
     with open('./config/homo_export_labels.yaml', 'r', encoding='utf8') as fin:
@@ -159,7 +160,7 @@ if __name__=='__main__':
     #         image_list.append(line.strip())
     # image_list = image_list[0:int(len(image_list)*0.5)]
 
-    device = 'cuda:1' if torch.cuda.is_available() else 'cpu'
+    device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
 
     net = MagicPoint(config['model'], input_channel=1, grid_size=8,device=device)
     net.load_state_dict(torch.load(config['model']['pretrained_model']))
