@@ -1,10 +1,10 @@
 data:
     name: 'coco'
     resize: [240,320]
-    image_train_path: ['./data/mg_syn_coco_15e-3/images/train2017/',]
-    label_train_path: ['./data/mg_syn_coco_15e-3/labels/train2017/',]
-    image_test_path: './data/mg_syn_coco_15e-3/images/test2017/'
-    label_test_path: './data/mg_syn_coco_15e-3/labels/test2017/'
+    image_train_path: ['./data/mg_coco_coco_3e-2/images/train2017/',]
+    label_train_path: ['./data/mg_coco_coco_3e-2/labels/train2017/',]
+    image_test_path: './data/mg_coco_coco_3e-2/images/test2017/'
+    label_test_path: './data/mg_coco_coco_3e-2/labels/test2017/'
     augmentation:
         photometric:
             train_enable: true
@@ -44,7 +44,7 @@ model:
     det_thresh: 0.001 # 1/65
     nms: 4
     topk: -1
-    pretrained_model: 'none'
+    pretrained_model: 'export/mg_coco_0_0.533.pth'
     backbone:
         backbone_type: 'VGG'
         vgg:
