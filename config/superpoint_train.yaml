@@ -1,10 +1,10 @@
 data:
     name: 'coco'
     resize: [240,320]
-    image_train_path: ['./data/mg_syn_coco_15e-3/images/train2017',]
-    label_train_path: ['./data/mg_syn_coco_15e-3/labels/train2017/',]
-    image_test_path: './data/mg_syn_coco_15e-3/images/test2017/'
-    label_test_path: './data/mg_syn_coco_15e-3/labels/test2017/'
+    image_train_path: ['./data/my_coco_50h_forSuperPoint/images/train2017',]
+    label_train_path: ['./data/my_coco_50h_forSuperPoint/labels/train2017/',]
+    image_test_path: './data/my_coco_50h_forSuperPoint/images/test2017/'
+    label_test_path: './data/my_coco_50h_forSuperPoint/labels/test2017/'
     augmentation:
         photometric:
             train_enable: true

@@ -1,9 +1,9 @@
 data:
     name: 'coco'
     resize: [240,320]
-    src_image_path: './data/coco/images/train2017/'
-    dst_label_path: './data/mg_coco_50h/labels/train2017/'
-    dst_image_path: './data/mg_coco_50h/images/train2017/'
+    src_image_path: './data/coco/images/test2017/'
+    dst_label_path: './data/mg_coco_50h_forSuperPoint/labels/test2017/'
+    dst_image_path: './data/mg_coco_50h_forSuperPoint/images/test2017/'
     homography_adaptation:
         num: 100
         aggregation: 'sum'
@@ -27,7 +27,7 @@ model:
     det_thresh: 0.015 #0.015
     nms: 4
     topk: 0
-    pretrained_model: './export/mg_syn_2_0.19.pth'
+    pretrained_model: './export/mg_coco_0_0.336.pth'
     backbone:
         backbone_type: 'VGG'
         vgg:
