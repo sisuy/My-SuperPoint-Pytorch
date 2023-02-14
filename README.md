@@ -53,18 +53,18 @@ Welcome to star this repository!
     ```
 * 2 Training steps are much similar to [rpautrat/Superpoint](https://github.com/rpautrat/SuperPoint). 
     **However we strongly suggest you read the scripts first before training**
-    - 2.0 Modify the following code in train.py, to save your models, if necessary  
+    - (Finished)2.0 Modify the following code in train.py, to save your models, if necessary  
           `if (i%118300==0 and i!=0) or (i+1)==len(dataloader['train']):`  
-    - 2.1 set proper values for training epoch in _*.yaml_.
-    - 2.2 Train MagicPoint (>1 hours):  
+    - (Finished)2.1 set proper values for training epoch in _*.yaml_.
+    - (Finished)2.2 Train MagicPoint (>1 hours):  
           `python train.py ./config/magic_point_syn_train.yaml`   
           (Note that you have to delete the directory _./data/synthetic_shapes_ whenever you want to regenerate it)
-    - 2.3 Export *coco labels data set v1* (>50 hours):   
+    - (Finished)2.3 Export *coco labels data set v1* (>50 hours):   
           `python homo_export_labels.py #run with your data path`
-    - 2.4 Train MagicPoint on *coco labels data set v1* (exported by step 2.2)       
+    - (Doing)2.4 Train MagicPoint on *coco labels data set v1* (exported by step 2.2)       
           `python train.py ./config/magic_point_coco_train.yaml #run with your data path` 
-    - 2.5 Export *coco labels data set v2* using the magicpoint trained by step 2.3
-    - 2.6 Train SuperPoint using *coco labels data set v2* (>12 hours)    
+    - (TODO)2.5 Export *coco labels data set v2* using the magicpoint trained by step 2.3
+    - (TODO)2.6 Train SuperPoint using *coco labels data set v2* (>12 hours)    
           `python train.py ./config/superpoint_train.yaml #run with your data path`  
     - others. Validate detection repeatability or description  
         ```
