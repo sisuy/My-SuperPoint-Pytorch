@@ -34,7 +34,7 @@ model:
         feat_in_dim: 128
         feat_out_dim: 256
     learning_rate: 0.001
-    nms: 4
+    nms: 5
     topk: 1000
     det_thresh: 0.001 # 0.001
     #batch_size: 50
