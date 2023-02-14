@@ -58,14 +58,23 @@ def one_adaptation(net, raw_image, probs, counts, images, config, device='cpu'):
     :param images: [B,1,H,W,N]
     :return:
     """
+    """
+    B: Batch size, which is the number of samples in a batch of data.
+
+    C: Number of channels, which is the number of features or channels in an image. For example, in a grayscale image, C would be 1, and in an RGB image, C would be 3.
+
+    H: Height, which is the number of rows in an image.
+
+    W: Width, which is the number of columns in an image.
+    """
     B, C, H, W, _ = images.shape
     #sample image patch
     M = sample_homography(shape=[H, W], config=config['homographies'],device=device)
     M_inv = torch.inverse(M)
     ##
     warped = kornia.warp_perspective(raw_image, M, dsize=(H,W), align_corners=True)
-    mask = kornia.warp_perspective(torch.ones([B,1,H,W], device=device), M, dsize=(H, W), mode='nearest',align_corners=True)
-    count = kornia.warp_perspective(torch.ones([B,1,H,W],device=device), M_inv, dsize=(H,W), mode='nearest',align_corners=True)
+    mask = kornia.warp_perspective(torch.ones([B,1,H,W], device=device), M, dsize=(H, W), mode='nearest',align_corners=True) # H
+    count = kornia.warp_perspective(torch.ones([B,1,H,W],device=device), M_inv, dsize=(H,W), mode='nearest',align_corners=True) # H^{-1}
 
     # Ignore the detections too close to the border to avoid artifacts
     if config['valid_border_margin']:
@@ -77,16 +86,18 @@ def one_adaptation(net, raw_image, probs, counts, images, config, device='cpu'):
         origin = ((kH-1)//2, (kW-1)//2)
         count = erosion2d(count, kernel, origin=origin) + 1.
         mask = erosion2d(mask, kernel, origin=origin) + 1.
+    # filter used to remove the interest point close to margin
     mask = mask.squeeze(dim=1)#B,H,W
     count = count.squeeze(dim=1)#B,H,W
+
 
     # Predict detection probabilities
     prob = net(warped)
     prob = prob['prob']
-    prob = prob * mask
+    prob = prob * mask # f(H(image))
     prob_proj = kornia.warp_perspective(prob.unsqueeze(dim=1), M_inv, dsize=(H,W), align_corners=True)
     prob_proj = prob_proj.squeeze(dim=1)#B,H,W
-    prob_proj = prob_proj * count#project back
+    prob_proj = prob_proj * count#project back: H^{-1} * f(H(image))
     ##
 
     probs = torch.cat([probs, prob_proj.unsqueeze(dim=1)], dim=1)#the probabilities of each pixels on raw image
@@ -117,6 +128,7 @@ def homography_adaptation(net, raw_image, config, device='cpu'):
     H,W = raw_image.shape[2:4]#H,W
     config = dict_update(homography_adaptation_default_config, config)
 
+    # output: sum(H^{-1} * f(H(image)))
     for _ in range(config['num']-1):
         probs, counts, images = one_adaptation(net, raw_image, probs, counts, images, config, device=device)
 
@@ -153,12 +165,6 @@ if __name__=='__main__':
 
     image_list = os.listdir(config['data']['src_image_path'])
     image_list = [os.path.join(config['data']['src_image_path'], fname) for fname in image_list]
-
-    # image_list = []
-    # with open('./coco_train_list.txt', 'r') as fin:
-    #     for line in fin:
-    #         image_list.append(line.strip())
-    # image_list = image_list[0:int(len(image_list)*0.5)]
 
     device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
 
@@ -202,14 +208,5 @@ if __name__=='__main__':
             np.save(os.path.join(config['data']['dst_label_path'], fname+'.npy'), pt)
             print('{}, {}'.format(os.path.join(config['data']['dst_label_path'], fname+'.npy'), len(pt)))
 
-        # ## debug
-        # for img, pts in zip(batch_raw_imgs,points):
-        #     debug_img = cv2.merge([img, img, img])
-        #     for pt in pts:
-        #         cv2.circle(debug_img, (int(pt[1]),int(pt[0])), 1, (0,255,0), thickness=-1)
-        #     plt.imshow(debug_img)
-        #     plt.show()
-        # if idx>=2:
-        #     break
         batch_fnames,batch_imgs,batch_raw_imgs = [],[],[]
     print('Done')
