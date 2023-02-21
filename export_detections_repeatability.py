@@ -25,8 +25,10 @@ if __name__=="__main__":
         dataset_ = SyntheticShapes(config['data'], task='training', device=device)
     elif config['data']['name'] == 'hpatches':
         dataset_ = PatchesDataset(config['data'],device=device)
+        print("build dataset: Done")
 
     p_dataloader = DataLoader(dataset_, batch_size=1, shuffle=False, collate_fn=dataset_.batch_collator)
+    print(len(p_dataloader))
 
     if config['model']['name'] == 'superpoint':
         net = SuperPointBNNet(config['model'], device=device, using_bn=config['model']['using_bn'])

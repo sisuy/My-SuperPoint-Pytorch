@@ -61,10 +61,11 @@ if __name__=='__main__':
     confidence_thresholds = [0.015, ]
 
     ## show keypoints
-    for i in range(4):
+    for i in range(50):
         for e, thresh in zip(experiments, confidence_thresholds):
             path = os.path.join(e, str(i) + ".npz")
             d = np.load(path)
+            
             img = np.round(d['img']*255).astype(np.int).astype(np.uint8)
             warp_img = np.round(d['warp_img']*255).astype(np.int).astype(np.uint8)
 
