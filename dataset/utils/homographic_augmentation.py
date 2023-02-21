@@ -5,12 +5,27 @@ from math import pi
 from numpy.random import uniform
 from scipy.stats import truncnorm
 import kornia
-from utils.params import dict_update
+import collections
 from utils.tensor_op import erosion2d
 from utils.keypoint_op import *
 from imgaug import augmenters as iaa
 
+def dict_update(d, u):
+    """Improved update for nested dictionaries.
 
+    Arguments:
+        d: The dictionary to be updated.
+        u: The update dictionary.
+
+    Returns:
+        The updated dictionary.
+    """
+    for k, v in u.items():
+        if isinstance(v, collections.Mapping):
+            d[k] = dict_update(d.get(k, {}), v)
+        else:
+            d[k] = v
+    return d
 
 def homographic_aug_pipline(img, pts, config, device='cpu'):
     """
@@ -25,7 +40,7 @@ def homographic_aug_pipline(img, pts, config, device='cpu'):
     image_shape = img.shape[2:]#HW
     homography = sample_homography(image_shape, config['params'], device=device)
     ##
-    ##arped_image = cv2.warpPerspective(img, homography, tuple(image_shape[::-1]))
+    ##warped_image = cv2.warpPerspective(img, homography, tuple(image_shape[::-1]))
     warped_image = kornia.warp_perspective(img, homography,image_shape, align_corners=True)
 
     warped_valid_mask = compute_valid_mask(image_shape, homography, config['valid_border_margin'], device=device)
