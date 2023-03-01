@@ -63,7 +63,8 @@ def compute_homography(data, keep_k_points=1000, correctness_thresh=3, orb=False
     # Keeps only the points shared between the two views
     keypoints = keep_shared_points(data['prob'],
                                    real_H, keep_k_points)
-    warped_keypoints = keep_shared_points(data['warped_prob'],
+    # warped_keypoints = keep_shared_points(data['warped_prob'],
+    warped_keypoints = keep_shared_points(data['warp_prob'],
                                           np.linalg.inv(real_H), keep_k_points)
     desc = data['desc'][keypoints[:, 0], keypoints[:, 1]]
     warped_desc = data['warped_desc'][warped_keypoints[:, 0],
@@ -163,6 +164,6 @@ def get_homography_matches(exper_name, keep_k_points=1000,
             data = pickle_load(path)
         output = compute_homography(data, keep_k_points, correctness_thresh, orb)
         output['image1'] = data['img']
-        output['image2'] = data['warp_img']
+        output['image2'] = data['warped_img']
         outputs.append(output)
     return outputs

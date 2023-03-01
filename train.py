@@ -52,6 +52,7 @@ def train_eval(model, dataloader, config):
             for i, data in tqdm(enumerate(dataloader['train'])):
                 prob, desc, prob_warp, desc_warp = None, None, None, None
                 if config['model']['name']=='magicpoint' and config['data']['name']=='coco':
+                    print("NOneNOne")
                     data['raw'] = data['warp']
                     data['warp'] = None
 

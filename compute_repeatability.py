@@ -50,24 +50,27 @@ def draw_keypoints(img, corners, color=(0, 255, 0), radius=3, s=3):
         cv2.circle(img, tuple(s*np.flip(c, 0)), radius, color, thickness=-1)
     return img
 def select_top_k(prob, thresh=0, num=300):
+    import torch
+    torch.set_printoptions(profile="full")
     pts = np.where(prob > thresh)
     idx = np.argsort(prob[pts])[::-1][:num]
     pts = (pts[0][idx], pts[1][idx])
+    p = torch.tensor(pts)
     return pts
 
 if __name__=='__main__':
 
     experiments = ['./data/repeatibility/hpatches/sp']
-    confidence_thresholds = [0.015, ]
+    confidence_thresholds = [0.0015, ]
 
     ## show keypoints
-    for i in range(50):
+    for i in range(540,545):
         for e, thresh in zip(experiments, confidence_thresholds):
             path = os.path.join(e, str(i) + ".npz")
             d = np.load(path)
-            
+            print("homography: {}".format(d['homography']))
             img = np.round(d['img']*255).astype(np.int).astype(np.uint8)
-            warp_img = np.round(d['warp_img']*255).astype(np.int).astype(np.uint8)
+            warp_img = np.round(d['warped_img']*255).astype(np.int).astype(np.uint8)
 
             points1 = select_top_k(d['prob'], thresh=thresh)
             im1 = draw_keypoints(img, points1, (0, 255, 0))/255.
@@ -82,18 +85,3 @@ if __name__=='__main__':
     for exp, thresh in zip(experiments, confidence_thresholds):
         repeatability = ev.compute_repeatability(exp, keep_k_points=300, distance_thresh=3)
         print('> {}: {}'.format(exp, repeatability))
-
-    # true_keypoints = get_true_keypoints('superpoint_hpatches_repeatability', 0.015)
-    # for i in range(3):
-    #     e = 'superpoint_hpatches_repeatability'
-    #     thresh = 0.015
-    #     path = os.path.join("./", e, str(i) + ".npz")
-    #     d = np.load(path)
-    #
-    #     points1 = np.where(d['prob'] > thresh)
-    #     im1 = draw_keypoints(d['image'][..., 0] * 255, points1, (0, 255, 0)) / 255.
-    #
-    #     points2 = true_keypoints[i]
-    #     im2 = draw_keypoints(d['warped_image'][..., 0] * 255, points2, (0, 255, 0)) / 255.
-    #
-    #     plot_imgs([im1, im2], titles=['Original', 'Original points warped'], dpi=200, cmap='gray')

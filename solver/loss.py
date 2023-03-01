@@ -38,41 +38,46 @@ def loss_func(config, data, prob, desc=None, prob_warp=None, desc_warp=None, dev
     return loss
 
 def detector_loss(keypoint_map, logits, valid_mask=None, grid_size=8, device='cpu'):
-    """
-    :param keypoint_map: [B,H,W]
-    :param logits: [B,65,Hc,Wc]
-    :param valid_mask:[B, H, W]
-    :param grid_size: 8 default
-    :return:
-    """
-    # Convert the boolean labels to indices including the "no interest point" dustbin
-    labels = keypoint_map.unsqueeze(1).float()#to [B, 1, H, W]
-    labels = pixel_shuffle_inv(labels, grid_size) # to [B,64,H/8,W/8]
-    B,C,h,w = labels.shape#h=H/grid_size,w=W/grid_size
-    labels = torch.cat([2*labels, torch.ones([B,1,h,w],device=device)], dim=1)
-    # Add a small random matrix to randomly break ties in argmax
-    labels = torch.argmax(labels + torch.zeros(labels.shape,device=device).uniform_(0,0.1),dim=1)#B*65*Hc*Wc
+    '''
+    Parameters:
+        keypoint_map: [B,H,W]
+        logits: [B,C,H/gird_size,W/grid_size]
+        valid_mask: [B,H,W]
+        grid_size: int(default=8)
+    '''
+    labels = keypoint_map.unsqueeze(dim=1) # [1, 1, 240, 320]
 
-    # Mask the pixels if bordering artifacts appear
-    valid_mask = torch.ones_like(keypoint_map) if valid_mask is None else valid_mask
-    valid_mask = valid_mask.unsqueeze(1)
-    valid_mask = pixel_shuffle_inv(valid_mask, grid_size)#[B, 64, H/8, W/8]
-    valid_mask = torch.prod(valid_mask, dim=1).unsqueeze(dim=1).type(torch.float32)#[B,1,H/8,W/8]
+    # pixel shuffle inverse 1 channels -> 64 channels
+    pixelShuffle_inv = torch.nn.PixelUnshuffle(grid_size)
+    labels = pixelShuffle_inv(labels) # [1, 64, 30, 40]
+    B,C,H,W = labels.shape
 
-    ## method 1
-    ce_loss = F.cross_entropy(logits, labels, reduction='none',)
-    valid_mask = valid_mask.squeeze(dim=1)
-    loss = torch.divide(torch.sum(ce_loss * valid_mask, dim=(1, 2)), torch.sum(valid_mask + 1e-6, dim=(1, 2)))
-    loss = torch.mean(loss)
+    # add dusbin(torch.ones -> [1,1,30,40])
+    labels = torch.cat([2*labels,torch.ones([B,1,H,W],device=device)],dim=1) # [1, 65, 30, 40]
+    labels = torch.argmax(labels + torch.zeros(labels.shape,device=device).uniform_(0,0.1),dim=1)#B*)H/grid_size)*(W/grid_size)
 
-    ## method 2
-    ## method 2 equals to tf.nn.sparse_softmax_cross_entropy()
-    # epsilon = 1e-6
-    # loss = F.log_softmax(logits,dim=1)
-    # mask = valid_mask.type(torch.float32)
-    # mask /= (torch.mean(mask)+epsilon)
-    # loss = torch.mul(loss, mask)
-    # loss = F.nll_loss(loss,labels)
+    # generate valid_mask: [B,H,W] -> [B,H/8,/W/8]
+    if valid_mask is None:
+        valid_mask = torch.ones_like(keypoint_map)
+    else:
+        valid_mask = valid_mask
+
+    valid_mask = valid_mask.unsqueeze(dim=1) # [B,1,H,W] 
+    valid_mask =  pixelShuffle_inv(valid_mask) # [B,64,H/8,W/8]
+    valid_mask = torch.prod(valid_mask,dim=1).unsqueeze(dim=1) # [B,1,H/8,W/8]
+
+    # apply softmax on predicted logits value
+    loss = torch.nn.functional.log_softmax(logits,dim=1)
+    mask = valid_mask.type(torch.float32)
+
+    # generate the loss covered by valid mask
+    mask = mask.squeeze(dim=1) # [1,30,40]
+    mask = mask/(torch.mean(mask)+1e-5)
+    loss = mask*loss
+
+    # use cross-entropy to get the loss
+    lossFunction = torch.nn.CrossEntropyLoss(reduction='mean')
+    loss = lossFunction(logits,labels) # [1,30,40]
     return loss
 
 def descriptor_loss(config, descriptors, warped_descriptors, homographies, valid_mask=None, device='cpu'):
@@ -124,6 +129,7 @@ def descriptor_loss(config, descriptors, warped_descriptors, homographies, valid
     dot_product_desc = torch.sum(descriptors * warped_descriptors, dim=1)
 
     dot_product_desc = F.relu(dot_product_desc)
+    # print("dot_product_desc: {}".format(dot_product_desc))
 
     ##l2_normalization
     dot_product_desc = torch.reshape(F.normalize(torch.reshape(dot_product_desc, [batch_size, Hc, Wc, Hc * Wc]),
@@ -159,6 +165,7 @@ def descriptor_loss(config, descriptors, warped_descriptors, homographies, valid
 
     loss = lambda_loss*torch.sum(valid_mask * loss)/normalization
 
+    print("descriptor_loss: {}".format(loss))
     return loss
 
 

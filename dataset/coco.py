@@ -115,22 +115,23 @@ class COCODataset(torch.utils.data.Dataset):
         sub_data = {'img': [], 'kpts_map': [],'mask': []}#remove kpts
         batch = {'raw':sub_data, 'warp':deepcopy(sub_data), 'homography': []}
         for s in samples:
+            print("s['homography: {}".format(s['homography'].shape))
             batch['homography'].append(s['homography'])
-            #batch['img_name'].append(s['img_name'])
             for k in sub_data:
                 if k=='img':
                     batch['raw'][k].append(s['raw'][k].unsqueeze(dim=0))
                     if 'warp' in s:
-                        batch['warp'][k].append(s['warp'][k].unsqueeze(dim=0))
+                        batch['warp'][k].append(s['warp'][k].unsqueeze(dim=0)) # [1,H,W]
                 else:
+                    # kpts_map, mask: [H,W]
                     batch['raw'][k].append(s['raw'][k])
                     if 'warp' in s:
-                        batch['warp'][k].append(s['warp'][k])
+                        batch['warp'][k].append(s['warp'][k]) # [H,W]
         ##
         batch['homography'] = torch.stack(batch['homography'])
         for k0 in ('raw','warp'):
             for k1 in sub_data:#`img`, `img_name`, `kpts`, `kpts_map`...
-                if k1=='kpts' or k1=='img_name':
+                if k1=='kpts':
                     continue
                 batch[k0][k1] = torch.stack(batch[k0][k1])
 

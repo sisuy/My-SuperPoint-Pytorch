@@ -133,7 +133,7 @@ def compute_loc_error(exper_name, prob_thresh=0.5, distance_thresh=2):
 
 
 def compute_repeatability(exper_name, keep_k_points=300,
-                          distance_thresh=3, verbose=False):
+                          distance_thresh=3, verbose=True):
     """
     Compute the repeatability. The experiment must contain in its output the prediction
     on 2 images, an original image and a warped version of it, plus the homography
