@@ -5,10 +5,10 @@ from copy import deepcopy
 from torchvision import transforms
 from torch.utils.data import DataLoader
 from utils.params import dict_update
-from dataset.utils.homographic_augmentation import homographic_aug_pipline
-from dataset.utils.photometric_augmentation import PhotoAugmentor
+from utils.homographic_augmentation import homographic_aug_pipline
+from utils.photometric_augmentation import PhotoAugmentor
 from utils.keypoint_op import compute_keypoint_map
-from dataset.utils.photometric_augmentation import *
+from utils.photometric_augmentation import *
 
 
 class COCODataset(torch.utils.data.Dataset):
@@ -141,9 +141,9 @@ class COCODataset(torch.utils.data.Dataset):
 if __name__=='__main__':
     import yaml
     import matplotlib.pyplot as plt
-    from dataset.utils.photometric_augmentation import *
-    with open('../config/superpoint_train.yaml','r') as fin:
-        config = yaml.load(fin)
+    from utils.photometric_augmentation import *
+    with open('config/superpoint_train.yaml','r') as fin:
+        config = yaml.safe_load(fin)
 
     coco = COCODataset(config['data'],True)
     cdataloader = DataLoader(coco,collate_fn=coco.batch_collator,batch_size=1,shuffle=True)
